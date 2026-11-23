@@ -1,0 +1,74 @@
+================================================================================
+📌 MULTI-PORTAL IT JOB ALERT ENGINE - DUSRE USER KE LIYE SETUP GUIDE
+================================================================================
+
+// Is guide me bataya gaya hai ki koi bhi naya user is repo se apne mobile par alert kaise le sakta hai //
+
+--------------------------------------------------------------------------------
+1. 🔑 KEY REQUIREMENTS
+--------------------------------------------------------------------------------
+
+1. Ek **GitHub Account** (Free me github.com par banta hai).
+2. Ek **Telegram Account** (Aapke phone me Telegram App hona chahiye).
+3. **Telegram Bot Token** (@BotFather se 1 minute me generate hota hai).
+4. **Telegram Chat ID** (@userinfobot se 30 second me milti hai).
+
+--------------------------------------------------------------------------------
+2. 🤖 APNA TELEGRAM BOT CONNECT KARNA (ZERO CODE EDIT - SECURE)
+--------------------------------------------------------------------------------
+
+// Naye user ko code me apna token ya chat ID nahi likhna hota, ye GitHub Secrets me jata hai //
+
+Step 1: Is repository ko apne GitHub account me **Fork** ya **Clone** karein.
+Step 2: Apne repo ke **Settings** tab par click karein.
+Step 3: Left menu me **Secrets and variables** -> **Actions** par jayein.
+Step 4: **New repository secret** par click karke 2 secrets add karein:
+
+Secret 1:
+Name: **TELEGRAM_BOT_TOKEN**
+Value: **Aapke Bot ka Token jo @BotFather se mila ho**
+
+Secret 2:
+Name: **TELEGRAM_CHAT_ID**
+Value: **Aapki Chat ID jo @userinfobot se mili ho**
+
+Step 5: Repo Settings -> **Actions** -> **General** me jayein aur scroll karke **Workflow permissions** me **Read and write permissions** ko select karke **Save** kar dein.
+
+// Bas itna karte hi naye user ke Telegram par background scanning shuru ho jayegi! //
+
+--------------------------------------------------------------------------------
+3. ⚙️ CODE MEIN RULES CUSTOMIZE KARNA (MODULAR STRUCTURE)
+--------------------------------------------------------------------------------
+
+// Architecture modular hai, jisse koi bhi rule aasani se customize kiya ja sakta hai //
+
+--- [A. SALARY CUTOFF BADALNA] ---
+File: `filter-rules.js`
+Function: `parseNaukriSalary` aur `parseLinkedInSalary`
+Default rule: 6.0 LPA cutoff (undisclosed salary allowed if experience >= 4 yrs).
+Agar kisi ko 4.5 LPA ya 3.5 LPA se upar ki jobs chahiye toh `6.0` ko change karein.
+
+--- [B. LOCATIONS (CITIES) BADALNA] ---
+File: `filter-rules.js`
+Variable: `NCR_CITIES`
+Default: Delhi NCR, Noida, Greater Noida, Gurugram, Faridabad, Ghaziabad.
+Remote jobs: India-wide allow hoti hain.
+Agar kisi ko Bangalore ya Pune on-site add karna hai toh `NCR_CITIES` me add karein.
+
+--- [C. SKILL ENGINE CV LIST BADALNA] ---
+File: `skill-engine.js`
+Variable: `CV_SKILL_TERMS`
+Apne resume ke anusar technical tools, OS, aur IT roles add/remove karein.
+Strict 50% Rule: Job ke total technical skills me se kam se kam 50% matching hona zaroori hai.
+
+--- [D. TEST SUITE RUN KARNA] ---
+Unit tests run karne ke liye (bina koi Telegram alert bheje):
+```bash
+npm test
+```
+
+--------------------------------------------------------------------------------
+4. ⏰ BACKGROUND SCHEDULE
+--------------------------------------------------------------------------------
+
+GitHub Actions workflow (`.github/workflows/job-alert.yml`) har ghante subah 8:00 AM se raat 9:00 PM IST tak automatically run hota hai aur duplicate-free alerts bhejta hai.

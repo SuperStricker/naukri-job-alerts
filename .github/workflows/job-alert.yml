@@ -1,0 +1,81 @@
+name: IT Job Alert Automation (Naukri + LinkedIn)
+
+on:
+  schedule:
+    # Every 1 hour from 8:00 AM to 9:00 PM IST (UTC 02:30 to 15:30)
+    # IST = UTC + 5:30, so 8:00 AM IST = 02:30 UTC, 9:00 PM IST = 15:30 UTC
+    - cron: '30 2,3,4,5,6,7,8,9,10,11,12,13,14,15 * * *'
+  workflow_dispatch: # Manual trigger button on GitHub Actions tab
+
+permissions:
+  contents: write
+
+# Prevent overlapping runs from sending duplicate alerts or racing on seen_jobs.json
+concurrency:
+  group: job-alert-scan
+  cancel-in-progress: false
+
+jobs:
+  scan-and-alert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium with OS Dependencies
+        run: |
+          for i in 1 2 3; do
+            npx playwright install chromium --with-deps && break || (echo "Retry $i..." && sleep 8)
+          done
+
+      - name: Run Job Alert Scanner (Naukri + LinkedIn)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CI: "true"
+        run: node job-alert.js
+
+      - name: Commit & Push Updated seen_jobs.json
+        if: always() # Run even if previous step encountered non-fatal errors
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Fetch latest remote state and union-merge with local seen_jobs.json
+          git fetch origin main || true
+          node -e "
+            const fs = require('fs');
+            const local = fs.existsSync('seen_jobs.json') ? JSON.parse(fs.readFileSync('seen_jobs.json', 'utf-8')) : [];
+            let remote = [];
+            try {
+              const { execSync } = require('child_process');
+              const remoteContent = execSync('git show origin/main:seen_jobs.json').toString();
+              remote = JSON.parse(remoteContent);
+            } catch (e) {}
+            const union = Array.from(new Set([...remote, ...local])).slice(-2000);
+            fs.writeFileSync('seen_jobs.json', JSON.stringify(union, null, 2), 'utf-8');
+            console.log('[STATE SYNC] Union of remote & local seen_jobs:', union.length, 'entries.');
+          "
+
+          git add seen_jobs.json
+          if git diff --staged --quiet; then
+            echo "No new seen jobs to commit."
+          else
+            git commit -m "chore: auto-sync seen_jobs.json [skip ci]"
+            for i in 1 2 3; do
+              git pull --rebase origin main && git push && break || (echo "Retry push $i..." && sleep 3)
+            done
+          fi

@@ -1,0 +1,16 @@
+{
+  "name": "naukri-job-alert",
+  "version": "1.0.0",
+  "description": "Automated IT Support and Desktop Support Job Alert Engine for Delhi NCR with Telegram Notifications",
+  "main": "job-alert.js",
+  "scripts": {
+    "start": "node job-alert.js",
+    "test": "node test-suite.js"
+  },
+  "dependencies": {
+    "libsodium-wrappers": "^0.8.4",
+    "playwright": "^1.49.1",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}
