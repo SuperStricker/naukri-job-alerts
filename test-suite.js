@@ -83,6 +83,12 @@ runTest('Remote in Bengaluru, India must pass (India-Wide Remote)', () => {
   assert.strictEqual(res.eligible, true);
 });
 
+runTest('Standalone "Remote" on Naukri must pass (India-Wide Remote, e.g. Pearl job)', () => {
+  const res = isLocationEligible({ location: 'Remote', title: 'Desktop Support Engineer', description: 'Hiring office located in Bengaluru' });
+  assert.strictEqual(res.eligible, true);
+  assert.strictEqual(res.workMode, 'REMOTE');
+});
+
 runTest('Remote in USA must fail (Foreign Remote)', () => {
   const res = isLocationEligible({ location: 'San Francisco, CA, USA', workMode: 'REMOTE' });
   assert.strictEqual(res.eligible, false);
@@ -440,20 +446,21 @@ runTest('Defaults to Direct Apply (false) when no Easy Apply indicators found', 
 // ────────────────────────────────────────────────────────────
 console.log('\n🔎 9. Scan Coverage, Pagination & Failure Distinctions');
 
-runTest('All 204 Naukri targets and 30 LinkedIn targets configured for 6 NCR locations only', () => {
-  const ALLOWED_NCR_CITIES = ['Delhi NCR', 'Noida', 'Greater Noida', 'Gurugram', 'Faridabad', 'Ghaziabad'];
+runTest('All 238 Naukri targets (6 NCR + Remote) and 30 LinkedIn targets configured properly', () => {
+  const ALLOWED_LOCATIONS = ['Delhi NCR', 'Noida', 'Greater Noida', 'Gurugram', 'Faridabad', 'Ghaziabad', 'Remote'];
 
-  // Naukri validation: 34 roles × 6 cities = 204 targets
-  assert.strictEqual(NAUKRI_TARGETS.length, 204, 'Naukri must have exactly 204 targets');
+  // Naukri validation: 34 roles × 7 locations (6 NCR + Remote) = 238 targets
+  assert.strictEqual(NAUKRI_TARGETS.length, 238, 'Naukri must have exactly 238 targets');
   assert.strictEqual(ROLE_SLUGS.length, 34, 'Must have exactly 34 configured IT roles');
-  assert.strictEqual(CITY_SLUGS.length, 6, 'Must have exactly 6 configured NCR cities');
+  assert.strictEqual(CITY_SLUGS.length, 7, 'Must have exactly 7 configured locations (6 NCR + Remote)');
 
   for (const t of NAUKRI_TARGETS) {
-    assert.strictEqual(ALLOWED_NCR_CITIES.includes(t.cityLabel), true, `Target city ${t.cityLabel} must be in allowed NCR cities`);
+    assert.strictEqual(ALLOWED_LOCATIONS.includes(t.cityLabel), true, `Target location ${t.cityLabel} must be in allowed locations`);
     assert.strictEqual(/bengaluru|mumbai|pune|hyderabad|chennai|kolkata/i.test(t.url), false, 'Must not contain non-NCR cities');
   }
 
   // LinkedIn validation: 5 Boolean groups × 6 cities = 30 targets
+  const ALLOWED_NCR_CITIES = ['Delhi NCR', 'Noida', 'Greater Noida', 'Gurugram', 'Faridabad', 'Ghaziabad'];
   assert.strictEqual(LINKEDIN_TARGETS.length, 30, 'LinkedIn must have exactly 30 targets');
   assert.strictEqual(LINKEDIN_QUERY_GROUPS.length, 5, 'Must have exactly 5 query groups');
   assert.strictEqual(LINKEDIN_LOCATIONS.length, 6, 'Must have exactly 6 configured locations');
@@ -481,7 +488,7 @@ runTest('Time-budget expiry returns PARTIAL and lists exact skipped targets', ()
     return 'failed';
   }
 
-  const cov1 = { targetsConfigured: 204, targetsStarted: 186, targetsCompleted: 186, targetsFailed: 0 };
+  const cov1 = { targetsConfigured: 238, targetsStarted: 220, targetsCompleted: 220, targetsFailed: 0 };
   cov1.targetsSkipped = cov1.targetsConfigured - cov1.targetsStarted;
   assert.strictEqual(computeStatus(cov1), 'partial');
   assert.strictEqual(cov1.targetsSkipped, 18);
@@ -491,11 +498,11 @@ runTest('Time-budget expiry returns PARTIAL and lists exact skipped targets', ()
   assert.strictEqual(computeStatus(cov2), 'partial');
   assert.strictEqual(cov2.targetsSkipped, 13);
 
-  const cov3 = { targetsConfigured: 204, targetsStarted: 204, targetsCompleted: 204, targetsFailed: 0 };
+  const cov3 = { targetsConfigured: 238, targetsStarted: 238, targetsCompleted: 238, targetsFailed: 0 };
   cov3.targetsSkipped = 0;
   assert.strictEqual(computeStatus(cov3), 'complete');
 
-  const cov4 = { targetsConfigured: 204, targetsStarted: 204, targetsCompleted: 0, targetsFailed: 204 };
+  const cov4 = { targetsConfigured: 238, targetsStarted: 238, targetsCompleted: 0, targetsFailed: 238 };
   assert.strictEqual(computeStatus(cov4), 'failed');
 });
 

@@ -49,7 +49,8 @@ const CITY_SLUGS = [
   { label: 'Greater Noida', slug: 'greater-noida' },
   { label: 'Gurugram', slug: 'gurugram' },
   { label: 'Faridabad', slug: 'faridabad' },
-  { label: 'Ghaziabad', slug: 'ghaziabad' }
+  { label: 'Ghaziabad', slug: 'ghaziabad' },
+  { label: 'Remote', slug: 'remote', isRemote: true }
 ];
 
 const ROLE_SLUGS = [
@@ -92,12 +93,17 @@ const ROLE_SLUGS = [
 const NAUKRI_TARGETS = [];
 for (const role of ROLE_SLUGS) {
   for (const city of CITY_SLUGS) {
-    const query = role.expFilter ? '?experience=4' : '';
+    let url;
+    if (city.isRemote) {
+      url = `https://www.naukri.com/remote-${role.slug}-jobs`;
+    } else {
+      url = `https://www.naukri.com/${role.slug}-jobs-in-${city.slug}`;
+    }
     NAUKRI_TARGETS.push({
       name: `${role.name} [${city.label}]`,
       roleName: role.name,
       cityLabel: city.label,
-      url: `https://www.naukri.com/${role.slug}-jobs-in-${city.slug}${query}`
+      url
     });
   }
 }
@@ -109,7 +115,12 @@ function isFreshJob(posted = '') {
   const lower = posted.toLowerCase().trim();
   if (lower.includes('just now') || lower.includes('few hours') || lower.includes('today') || lower.includes('24h')) return true;
   if (lower.includes('1 day ago') || lower.includes('1d ago') || lower === 'yesterday' || lower.includes('1 day')) return true;
+  if (lower.includes('2 day') || lower.includes('2d ago')) return true;
+  if (lower.includes('3 day') || lower.includes('3d ago')) return true;
+  if (lower.includes('4 day') || lower.includes('4d ago')) return true;
+  if (lower.includes('5 day') || lower.includes('5d ago')) return true;
   if (/\b\d+\s*(m|min|mins|minute|minutes|h|hr|hrs|hour|hours)\s*ago\b/i.test(lower)) return true;
+  if (/\b[1-5]\s*d(ays?)?\s*ago\b/i.test(lower)) return true;
   return false;
 }
 

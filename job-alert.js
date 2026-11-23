@@ -57,7 +57,7 @@ async function main() {
     eligible: [],
     error: null,
     targetStatus: 'failed',
-    targetsConfigured: 204,
+    targetsConfigured: 238,
     targetsStarted: 0,
     targetsCompleted: 0,
     targetsFailed: 0,

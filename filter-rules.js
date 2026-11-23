@@ -49,7 +49,7 @@ function isLocationEligible({ location = '', title = '', description = '', workM
   const isNcr = NCR_CITIES.some(city => locLower.includes(city));
 
   if (mode === 'REMOTE') {
-    // Foreign remote positions are rejected
+    // Foreign remote positions are rejected (e.g. USA, UK, Canada, Australia)
     const isForeign = FOREIGN_REGIONS.some(region => {
       const rx = new RegExp(`\\b${region}\\b`, 'i');
       return rx.test(locLower);
@@ -58,12 +58,8 @@ function isLocationEligible({ location = '', title = '', description = '', workM
       return { eligible: false, reason: `Foreign Remote (${location})`, workMode: mode };
     }
 
-    // Remote is allowed India-wide if verified in India or NCR
-    const isIndia = INDIA_REGIONS.some(r => locLower.includes(r)) || isNcr || /\b(pan[\s-]?india|anywhere\s+in\s+india)\b/i.test(fullText);
-    if (isIndia || isNcr) {
-      return { eligible: true, workMode: mode, locationLabel: location };
-    }
-    return { eligible: false, reason: `Remote location outside India (${location})`, workMode: mode };
+    // Remote is allowed India-wide (including standalone "Remote", "Work from Home", or Indian cities/NCR)
+    return { eligible: true, workMode: mode, locationLabel: location };
   }
 
   // Hybrid & On-Site MUST be in NCR

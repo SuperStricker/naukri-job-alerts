@@ -6,8 +6,8 @@ This document records the complete architecture, filtering policies, timing budg
 
 ## 📌 Executive Summary
 
-- **Platforms Monitored:** Naukri.com (204 Targets, 34 roles × 6 NCR cities) + LinkedIn Jobs (30 Targets, 5 Boolean queries × 6 NCR locations).
-- **Core Coverage:** Delhi NCR (Delhi, New Delhi, Noida, Greater Noida, Gurugram, Faridabad, Ghaziabad) + India-Wide Remote associated with NCR.
+- **Platforms Monitored:** Naukri.com (238 Targets, 34 roles × 7 locations including Remote) + LinkedIn Jobs (30 Targets, 5 Boolean queries × 6 NCR locations).
+- **Core Coverage:** Delhi NCR (Delhi, New Delhi, Noida, Greater Noida, Gurugram, Faridabad, Ghaziabad) + India-Wide Remote / WFH.
 - **Alert Dispatch:** Telegram Bot (`@Naukari_2027_alert_bot` → Chat ID `1229206599`).
 - **Alert Format:** Streamlined user template: `🔔 Job :- <Headline>` with `1. 🟡 Portal: LinkedIn || 🟢 Easy Apply ||` and `🔗 Apply Link`.
 - **Execution Schedule:** Every 1 hour from 8:00 AM to 9:00 PM IST (UTC 02:30 to 15:30).
@@ -85,7 +85,7 @@ Minimum 50% match required AND $\ge 2$ distinct IT support skills. Zero bypass.
 
 ## 🧪 Automated Test Suite (`node test-suite.js`)
 
-- **Current Status:** **46/46 Tests Passing (100%)**.
+- **Current Status:** **47/47 Tests Passing (100%)**.
 - **Coverage Suite (Section 9):**
   1. Exact 204 Naukri targets & 30 LinkedIn targets restricted strictly to 6 NCR locations.
   2. LinkedIn round-robin target interleaving across 5 query groups.
