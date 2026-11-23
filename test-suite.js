@@ -131,6 +131,22 @@ runTest('Monthly ₹45,000/month fails (annualized 5.4 LPA < 7.0)', () => {
   assert.strictEqual(res.eligible, false);
 });
 
+runTest('Naukri parseNaukriSalary supports both LPA and full INR comma notation >= 7.0 LPA', () => {
+  const s1 = parseNaukriSalary('4-8.5 Lacs P.A.');
+  assert.strictEqual(s1.isDisclosed, true);
+  assert.strictEqual(s1.max >= 7.0, true);
+
+  const s2 = parseNaukriSalary('7,00,000 - 10,00,000 PA');
+  assert.strictEqual(s2.isDisclosed, true);
+  assert.strictEqual(s2.max, 10);
+  assert.strictEqual(s2.isHigh, true);
+
+  const s3 = parseNaukriSalary('3,50,000 - 5,00,000 PA');
+  assert.strictEqual(s3.isDisclosed, true);
+  assert.strictEqual(s3.max, 5);
+  assert.strictEqual(s3.max < 7.0, true);
+});
+
 runTest('Shift & Cab allowances must be ignored and not treated as salary', () => {
   const jd = 'Night shift allowance: ₹5,000 per month. Cab reimbursement: ₹4,000/month.';
   const res = parseLinkedInSalary(jd);
@@ -168,15 +184,18 @@ runTest('Company age snippet must not be mistaken for candidate experience requi
   assert.strictEqual(res.eligible, true);
 });
 
-runTest('Naukri matchesExperience allows 3-8 yrs (5-7, 6-8) and strictly rejects 7-9, 8-9, and <= 2 yrs', () => {
+runTest('Naukri matchesExperience allows 2-6 yrs, 3-8 yrs, 5-10 yrs (6 yrs candidate) and strictly rejects freshers <=2y and ultra-senior >=8y', () => {
+  assert.strictEqual(matchesNaukriExperience('2-6 Yrs'), true);
   assert.strictEqual(matchesNaukriExperience('3-5 Yrs'), true);
+  assert.strictEqual(matchesNaukriExperience('3-8 Yrs'), true);
   assert.strictEqual(matchesNaukriExperience('5-7 Yrs'), true);
   assert.strictEqual(matchesNaukriExperience('6-8 Yrs'), true);
+  assert.strictEqual(matchesNaukriExperience('4-9 Yrs'), true);
+  assert.strictEqual(matchesNaukriExperience('5-10 Yrs'), true);
+  assert.strictEqual(matchesNaukriExperience('6-12 Yrs'), true);
   assert.strictEqual(matchesNaukriExperience('1-2 Yrs'), false);
-  assert.strictEqual(matchesNaukriExperience('7-9 Yrs'), false);
-  assert.strictEqual(matchesNaukriExperience('8-9 Yrs'), false);
   assert.strictEqual(matchesNaukriExperience('8-12 Yrs'), false);
-  assert.strictEqual(matchesNaukriExperience('5-10 Yrs'), false);
+  assert.strictEqual(matchesNaukriExperience('10-15 Yrs'), false);
 });
 
 runTest('Strictly blocks non-support titles like Consultant, Principal Engineer, CPQ', () => {

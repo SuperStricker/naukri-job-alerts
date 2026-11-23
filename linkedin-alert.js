@@ -113,9 +113,10 @@ function isFreshLinkedInJob(posted = '') {
   const lower = posted.toLowerCase().trim();
   if (lower.includes('just now') || lower.includes('minute') || lower.includes('hour') || lower.includes('today')) return true;
   if (lower.includes('1 day ago') || lower.includes('1d') || lower === 'yesterday') return true;
+  if (lower.includes('2 day') || lower.includes('3 day') || lower.includes('4 day') || lower.includes('5 day')) return true;
   if (/\b\d+\s*d\b/i.test(lower)) {
     const days = parseInt(lower.match(/(\d+)\s*d/i)[1], 10);
-    return days <= 1;
+    return days <= 5;
   }
   return false;
 }

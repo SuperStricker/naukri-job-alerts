@@ -193,10 +193,13 @@ function parseNaukriExperience(expText = '') {
 
 function matchesNaukriExperience(expText = '') {
   const exp = parseNaukriExperience(expText);
-  // Rejects freshers <= 2 yrs
+  // Rejects pure freshers <= 2 yrs (e.g. 0-1, 0-2, 1-2 yrs)
   if (exp.max <= 2) return false;
-  // User strict requirement: 5-7, 6-8, max 8 yrs. Strictly reject 7-9, 8-9, 8-12, 10+ yrs
-  if (exp.min > 7 || exp.max > 8) return false;
+  // User has 6 years experience: allows 2-6, 3-8, 4-8, 4-9, 5-8, 5-10, 6-10, 6-12 yrs.
+  // Rejects ultra-senior / director roles where minimum required is > 7 yrs (e.g. 8-12, 10-15 yrs)
+  if (exp.min > 7) return false;
+  // Upper ceiling: allows up to 12 yrs
+  if (exp.max > 12) return false;
   return true;
 }
 
@@ -247,9 +250,9 @@ function parseLinkedInExperience(jdText = '', title = '', seniority = '') {
     if (maxYears <= 2) {
       return { eligible: false, reason: `Experience ${label} <= 2 Yrs (Fresher)`, label };
     }
-    // User strict requirement: 5-7, 6-8, max 8 yrs. Strictly reject 7-9, 8-9, 8-12, 10+ yrs
-    if (minYears > 7 || maxYears > 8) {
-      return { eligible: false, reason: `Experience ${label} > 8 Yrs (Overqualified, requires max 7-8 yrs)`, label };
+    // User has 6 years experience: allows up to 12 yrs (e.g. 2-6, 3-8, 4-9, 5-10, 6-12 yrs)
+    if (minYears > 7 || maxYears > 12) {
+      return { eligible: false, reason: `Experience ${label} out of range for 6 yrs candidate`, label };
     }
     return { eligible: true, label };
   }
@@ -273,10 +276,20 @@ function parseNaukriSalary(salaryText = '') {
   if (!salaryText || /not disclosed/i.test(salaryText)) {
     return { isDisclosed: false, isHigh: false, min: null, max: null, raw: 'Not Disclosed' };
   }
-  const m = salaryText.match(/(\d+(?:\.\d+)?)\s*(?:-\s*(\d+(?:\.\d+)?))?\s*(?:lacs|lakhs|lpa)/i);
-  if (m) {
-    const min = parseFloat(m[1]);
-    const max = m[2] ? parseFloat(m[2]) : min;
+  // 1. Check Lacs/LPA format: e.g. 4-8.5 Lacs P.A., 6-10 LPA
+  const mLacs = salaryText.match(/(\d+(?:\.\d+)?)\s*(?:-\s*(\d+(?:\.\d+)?))?\s*(?:lacs|lakhs|lpa)/i);
+  if (mLacs) {
+    const min = parseFloat(mLacs[1]);
+    const max = mLacs[2] ? parseFloat(mLacs[2]) : min;
+    return { isDisclosed: true, isHigh: max >= 7.0, min, max, raw: salaryText.trim() };
+  }
+  // 2. Check full number INR format: e.g. 7,00,000 - 10,00,000 PA, 3,50,000 - 5,00,000 PA
+  const mFull = salaryText.match(/(\d{1,3}(?:,\d{2,3})+)\s*(?:-\s*(\d{1,3}(?:,\d{2,3})+))?/i);
+  if (mFull) {
+    const minNum = parseInt(mFull[1].replace(/,/g, ''), 10);
+    const maxNum = mFull[2] ? parseInt(mFull[2].replace(/,/g, ''), 10) : minNum;
+    const min = minNum / 100000;
+    const max = maxNum / 100000;
     return { isDisclosed: true, isHigh: max >= 7.0, min, max, raw: salaryText.trim() };
   }
   return { isDisclosed: false, isHigh: false, min: null, max: null, raw: salaryText.trim() };

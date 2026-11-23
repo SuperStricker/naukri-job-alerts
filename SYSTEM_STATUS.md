@@ -85,7 +85,9 @@ Minimum 50% match required AND $\ge 2$ distinct IT support skills. Zero bypass.
 
 ## 🧪 Automated Test Suite (`node test-suite.js`)
 
-- **Current Status:** **47/47 Tests Passing (100%)**.
+- **Current Status:** **48/48 Tests Passing (100%)**.
+- **Candidate Profile Calibration:** 6 Years Experience (Allows 2-6, 3-8, 4-9, 5-10, 6-12 Yrs; Rejects <=2y Freshers and >=8y Ultra-Senior).
+- **Salary Calibration:** Must reach >= 7.0 LPA (Supports LPA & Full INR Comma notation). Remote jobs 100% allowed India-wide.
 - **Coverage Suite (Section 9):**
   1. Exact 204 Naukri targets & 30 LinkedIn targets restricted strictly to 6 NCR locations.
   2. LinkedIn round-robin target interleaving across 5 query groups.
