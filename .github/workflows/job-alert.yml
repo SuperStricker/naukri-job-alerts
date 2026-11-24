@@ -2,18 +2,18 @@ name: IT Job Alert Automation (Naukri + LinkedIn)
 
 on:
   schedule:
-    # Every 1 hour from 8:00 AM to 9:00 PM IST (UTC 02:30 to 15:30)
-    # IST = UTC + 5:30, so 8:00 AM IST = 02:30 UTC, 9:00 PM IST = 15:30 UTC
-    - cron: '30 2,3,4,5,6,7,8,9,10,11,12,13,14,15 * * *'
+    # Every 1 hour from ~8:00 AM to ~9:00 PM IST (UTC 02:17 to 15:17)
+    # Using off-peak minute :17 to completely bypass GitHub's overloaded :00 and :30 queues
+    - cron: '17 2,3,4,5,6,7,8,9,10,11,12,13,14,15 * * *'
   workflow_dispatch: # Manual trigger button on GitHub Actions tab
 
 permissions:
   contents: write
 
-# Prevent overlapping runs from sending duplicate alerts or racing on seen_jobs.json
+# Cancel queued stale delayed runs so each hourly scan always runs fresh without waiting
 concurrency:
   group: job-alert-scan
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   scan-and-alert:
@@ -26,10 +26,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js (v20)
+      - name: Setup Node.js (v22)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install Node Dependencies
