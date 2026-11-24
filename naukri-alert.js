@@ -113,14 +113,12 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function isFreshJob(posted = '') {
   if (!posted) return true;
   const lower = posted.toLowerCase().trim();
+  // Strictly <= 24 hours (Fresh only)
   if (lower.includes('just now') || lower.includes('few hours') || lower.includes('today') || lower.includes('24h')) return true;
   if (lower.includes('1 day ago') || lower.includes('1d ago') || lower === 'yesterday' || lower.includes('1 day')) return true;
-  if (lower.includes('2 day') || lower.includes('2d ago')) return true;
-  if (lower.includes('3 day') || lower.includes('3d ago')) return true;
-  if (lower.includes('4 day') || lower.includes('4d ago')) return true;
-  if (lower.includes('5 day') || lower.includes('5d ago')) return true;
   if (/\b\d+\s*(m|min|mins|minute|minutes|h|hr|hrs|hour|hours)\s*ago\b/i.test(lower)) return true;
-  if (/\b[1-5]\s*d(ays?)?\s*ago\b/i.test(lower)) return true;
+  if (/\b1\s*d(ays?)?\s*ago\b/i.test(lower)) return true;
+  // Strictly reject 2+ days old postings (e.g. 2 days ago, 3 days, 4 days, 5 days, 1 week, etc.)
   return false;
 }
 

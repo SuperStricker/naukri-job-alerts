@@ -111,13 +111,12 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function isFreshLinkedInJob(posted = '') {
   if (!posted) return true;
   const lower = posted.toLowerCase().trim();
+  // Strictly <= 24 hours (Fresh only)
   if (lower.includes('just now') || lower.includes('minute') || lower.includes('hour') || lower.includes('today')) return true;
-  if (lower.includes('1 day ago') || lower.includes('1d') || lower === 'yesterday') return true;
-  if (lower.includes('2 day') || lower.includes('3 day') || lower.includes('4 day') || lower.includes('5 day')) return true;
-  if (/\b\d+\s*d\b/i.test(lower)) {
-    const days = parseInt(lower.match(/(\d+)\s*d/i)[1], 10);
-    return days <= 5;
-  }
+  if (lower.includes('1 day ago') || lower.includes('1d') || lower === 'yesterday' || lower.includes('1 day')) return true;
+  if (/\b1\s*d\b/i.test(lower)) return true;
+  if (/\b\d+\s*(m|h)\b/i.test(lower)) return true;
+  // Strictly reject 2+ days old postings (2 days, 3 days, 4 days, 5 days, etc.)
   return false;
 }
 
@@ -696,5 +695,6 @@ module.exports = {
   fetchLinkedInJobDetail,
   LINKEDIN_TARGETS,
   LINKEDIN_QUERY_GROUPS,
-  LINKEDIN_LOCATIONS
+  LINKEDIN_LOCATIONS,
+  isFreshLinkedInJob
 };

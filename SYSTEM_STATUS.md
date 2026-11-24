@@ -68,6 +68,10 @@ Blocks Consultant, Principal Engineer, Staff Engineer, CPQ, Investment Managemen
 ### 7. Strict 50% Job-Skill Ratio Gate (`skill-engine.js`)
 Minimum 50% match required AND $\ge 2$ distinct IT support skills. Zero bypass.
 
+### 8. Strict Freshness Policy (<= 24 Hours Only)
+- **Allowed:** Posted Today, Just Now, Few Hours ago, Minutes ago, 1 day ago / Yesterday ($\le$ 24 hours).
+- **Strictly Blocked:** $\ge 2$ days (2 days, 3 days, 4 days, 5 days, 1 week, etc.). Stale postings are 100% blocked from Telegram dispatch.
+
 ---
 
 ## ⏱️ Execution Duration & Safety Budgets

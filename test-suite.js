@@ -26,12 +26,14 @@ const {
   NAUKRI_TARGETS,
   CITY_SLUGS,
   ROLE_SLUGS,
-  getNaukriPageUrl
+  getNaukriPageUrl,
+  isFreshJob
 } = require('./naukri-alert');
 const {
   LINKEDIN_TARGETS,
   LINKEDIN_QUERY_GROUPS,
-  LINKEDIN_LOCATIONS
+  LINKEDIN_LOCATIONS,
+  isFreshLinkedInJob
 } = require('./linkedin-alert');
 
 let passedTests = 0;
@@ -640,6 +642,45 @@ runTest('LinkedIn detail rate limit (429) recorded as incomplete detail fetch, l
   assert.strictEqual(eligible.length, 1);
   assert.strictEqual(seenJobs.has('111'), false, 'Rate-limited job must NOT be marked seen so it can be retried');
   assert.strictEqual(seenJobs.has('222'), true);
+});
+
+// ────────────────────────────────────────────────────────────
+// 10. STRICT FRESHNESS TESTS (<= 24 Hours / 1 Day Only)
+// ────────────────────────────────────────────────────────────
+console.log('\n⏳ 10. Strict Freshness Validation (<= 24h)');
+
+runTest('Naukri isFreshJob strictly allows <= 24h and blocks >= 2 days (2d, 3d, 5d, etc.)', () => {
+  assert.strictEqual(isFreshJob('Just Now'), true);
+  assert.strictEqual(isFreshJob('10 mins ago'), true);
+  assert.strictEqual(isFreshJob('3 hours ago'), true);
+  assert.strictEqual(isFreshJob('Today'), true);
+  assert.strictEqual(isFreshJob('Yesterday'), true);
+  assert.strictEqual(isFreshJob('1 day ago'), true);
+  assert.strictEqual(isFreshJob('1d ago'), true);
+
+  // Strictly rejected:
+  assert.strictEqual(isFreshJob('2 days ago'), false);
+  assert.strictEqual(isFreshJob('3 days ago'), false);
+  assert.strictEqual(isFreshJob('4 days ago'), false);
+  assert.strictEqual(isFreshJob('5 days ago'), false);
+  assert.strictEqual(isFreshJob('1 week ago'), false);
+  assert.strictEqual(isFreshJob('30+ days ago'), false);
+});
+
+runTest('LinkedIn isFreshLinkedInJob strictly allows <= 24h and blocks >= 2 days', () => {
+  assert.strictEqual(isFreshLinkedInJob('Just now'), true);
+  assert.strictEqual(isFreshLinkedInJob('20 minutes ago'), true);
+  assert.strictEqual(isFreshLinkedInJob('5 hours ago'), true);
+  assert.strictEqual(isFreshLinkedInJob('1 day ago'), true);
+  assert.strictEqual(isFreshLinkedInJob('1d'), true);
+
+  // Strictly rejected:
+  assert.strictEqual(isFreshLinkedInJob('2 days ago'), false);
+  assert.strictEqual(isFreshLinkedInJob('3 days ago'), false);
+  assert.strictEqual(isFreshLinkedInJob('4 days ago'), false);
+  assert.strictEqual(isFreshLinkedInJob('5 days ago'), false);
+  assert.strictEqual(isFreshLinkedInJob('1 week ago'), false);
+  assert.strictEqual(isFreshLinkedInJob('2 weeks ago'), false);
 });
 
 // ────────────────────────────────────────────────────────────
