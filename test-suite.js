@@ -273,6 +273,15 @@ runTest('Job with zero technical skills is blocked', () => {
   assert.strictEqual(res.passesStrict50, false);
 });
 
+runTest('Naukri chopped generic tags (End, Usage, Desk, Technical) do not penalize real Desktop Support jobs', () => {
+  const res = evaluateJobSkillRatio({
+    title: 'Desktop Support Engineer @ Noida',
+    tags: ['Technical support', 'Ticketing', 'Vip Support', 'End', 'System engineering', 'Usage', 'Ticketing Tools', 'Desk']
+  });
+  assert.strictEqual(res.passesStrict50, true);
+  assert.strictEqual(res.percentage >= 50, true);
+});
+
 // ────────────────────────────────────────────────────────────
 // 6. DEDUPLICATION TESTS
 // ────────────────────────────────────────────────────────────
@@ -478,7 +487,17 @@ runTest('All 238 Naukri targets (6 NCR + Remote) and 30 LinkedIn targets configu
   for (const t of NAUKRI_TARGETS) {
     assert.strictEqual(ALLOWED_LOCATIONS.includes(t.cityLabel), true, `Target location ${t.cityLabel} must be in allowed locations`);
     assert.strictEqual(/bengaluru|mumbai|pune|hyderabad|chennai|kolkata/i.test(t.url), false, 'Must not contain non-NCR cities');
+    assert.strictEqual(t.url.includes('jobAge=1'), true, `Naukri target URL must include jobAge=1: ${t.url}`);
+    if (t.cityLabel === 'Remote') {
+      assert.strictEqual(t.url.includes('wfhType=2'), true, `Remote target must use wfhType=2: ${t.url}`);
+    }
   }
+
+  // Verify pagination URL preserves query parameters
+  assert.strictEqual(
+    getNaukriPageUrl('https://www.naukri.com/desktop-support-engineer-jobs?wfhType=2&jobAge=1', 2),
+    'https://www.naukri.com/desktop-support-engineer-jobs-2?wfhType=2&jobAge=1'
+  );
 
   // LinkedIn validation: 5 Boolean groups × 6 cities = 30 targets
   const ALLOWED_NCR_CITIES = ['Delhi NCR', 'Noida', 'Greater Noida', 'Gurugram', 'Faridabad', 'Ghaziabad'];

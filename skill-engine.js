@@ -17,27 +17,27 @@
 const CV_SKILL_TERMS = [
   // Core IT & Helpdesk Support (check multi-word support roles BEFORE generic device words!)
   { label: 'Desktop Support', pattern: /\b(desktop\s+support|desktop\s+engineering|desktop\s+admin(istration)?)\b/i },
-  { label: 'IT Support', pattern: /\b(it\s+support|technical\s+support|tech\s+support|tech\s+support\s+engineer|tse|user\s+support|onsite\s+support|field\s+support|remote\s+support)\b/i },
+  { label: 'IT Support', pattern: /\b(it\s+support|technical\s+support|tech\s+support|tech\s+support\s+engineer|tse|user\s+support|onsite\s+support|field\s+support|remote\s+support|vip\s+support|client\s+support|application\s+support|software\s+support)\b/i },
   { label: 'IT Analyst', pattern: /\b(it\s+analyst|technical\s+analyst|desktop\s+analyst|support\s+analyst|systems?\s+analyst|service\s+desk\s+analyst)\b/i },
-  { label: 'Service Desk / Helpdesk', pattern: /\b(service\s+desk|helpdesk|help\s+desk|l1\s+support|l2\s+support|l3\s+support|tier\s*1|tier\s*2)\b/i },
+  { label: 'Service Desk / Helpdesk', pattern: /\b(service\s+desk(\s+management)?|it\s+service\s+desk|helpdesk|help\s+desk|it\s+helpdesk|l1(\s+support)?|l2(\s+support)?|l3(\s+support)?|tier\s*1|tier\s*2)\b/i },
   { label: 'System Support / Admin', pattern: /\b(system\s+support|system\s+administration|systems?\s+admin|it\s+administration|windows\s+admin)\b/i },
   { label: 'Troubleshooting', pattern: /\b(troubleshooting|diagnosis|root\s+cause|rca|fms|facility\s+management)\b/i },
 
   // Hardware, End-User Devices & Peripherals
   { label: 'Hardware Support', pattern: /\b(hardware|hardware\s+troubleshooting|computer\s+hardware|server\s+hardware)\b/i },
-  { label: 'Desktop / Laptop', pattern: /\b(desktops?(?!\s+(support|engineering|admin))|laptops?|workstations?|pc\s+support|desktop\s+repair|imaging)\b/i },
-  { label: 'Printers / Scanners', pattern: /\b(printers?|scanners?|peripherals?|biometrics?|cctv|barcode|ups)\b/i },
+  { label: 'Desktop / Laptop', pattern: /\b(desktops?(?!\s+(support|engineering|admin))|laptops?|workstations?|pc\s+support|pc\s+assembling|desktop\s+repair|imaging)\b/i },
+  { label: 'Printers / Scanners', pattern: /\b(printers?|printing|scanners?|peripherals?|biometrics?|cctv|barcode|ups)\b/i },
   { label: 'Asset Management', pattern: /\b(asset\s+management|it\s+asset|it\s+inventory|itam|cmdb|it\s+procurement)\b/i },
-  { label: 'EUC / Workplace', pattern: /\b(euc|end\s+user\s+computing|end\s+user\s+support|workplace\s+support|deskside|desk\s*side)\b/i },
+  { label: 'EUC / Workplace', pattern: /\b(euc|end\s+user(\s+computing|\s+support)?|workplace\s+support|deskside|desk\s*side)\b/i },
   { label: 'Mac / MDM / Jamf', pattern: /\b(mac|macos|mac\s*os|macbook|jamf|mdm|apple|ios|ipad|iphone)\b/i },
   { label: 'Audio Visual / VC', pattern: /\b(audio\s*visual|conferencing|video\s+conferencing|teams\s+room|zoom\s+room)\b/i },
 
   // OS, Active Directory & Microsoft 365
-  { label: 'Windows OS', pattern: /\b(windows(\s*(10|11|7|8|xp|os|client))?|microsoft\s+windows|operating\s+systems?|os\s+installation|windows\s+deployment)\b/i },
+  { label: 'Windows OS', pattern: /\b(windows(\s*(10|11|7|8|xp|os|client))?|microsoft\s+windows|operating\s+systems?|os\s+installation|os\s+support|windows\s+deployment)\b/i },
   { label: 'Windows Server / Wintel', pattern: /\b(windows\s+server|wintel|wsus)\b/i },
   { label: 'Active Directory', pattern: /\b(active\s+directory|\bad\b|user\s+provisioning|access\s+control|access\s+management|it\s+onboarding)\b/i },
   { label: 'Group Policy (GPO)', pattern: /\b(group\s+policy|gpo)\b/i },
-  { label: 'Microsoft 365 / O365', pattern: /\b(microsoft\s*365|m365|office\s*365|o365|ms\s*office|google\s+workspace)\b/i },
+  { label: 'Microsoft 365 / O365', pattern: /\b(microsoft\s*365|m365|office\s*365|o365|ms\s*office(\s+outlook)?|google\s+workspace)\b/i },
   { label: 'Exchange / Outlook', pattern: /\b(exchange\s+online|ms\s+exchange|outlook|email\s+administration)\b/i },
   { label: 'Teams / SharePoint / OneDrive', pattern: /\b(microsoft\s+teams|sharepoint|onedrive)\b/i },
   { label: 'Intune / SCCM / Patching', pattern: /\b(intune|sccm|mecm|patch\s+management|patching|endpoint\s+manager|software\s+deployment)\b/i },
@@ -48,14 +48,14 @@ const CV_SKILL_TERMS = [
   // ITSM & Operations
   { label: 'ITIL / ITSM', pattern: /\b(itil|itsm|it\s+service\s+management)\b/i },
   { label: 'ServiceNow / Remedy / Jira', pattern: /\b(servicenow|remedy|jira|freshservice|zendesk|manageengine)\b/i },
-  { label: 'Ticketing / Incident Mgmt', pattern: /\b(ticketing|incident\s+management|problem\s+management|change\s+management|service\s+request)\b/i },
+  { label: 'Ticketing / Incident Mgmt', pattern: /\b(ticketing(\s+tools?)?|incident\s+management|problem\s+management|change\s+management|service\s+request)\b/i },
   { label: 'SLA & Service Delivery', pattern: /\b(sla|service\s+delivery|it\s+operations|service\s+ops|service\s+operations|kpi)\b/i },
   { label: 'Backup & Virtualization', pattern: /\b(backup|disaster\s+recovery|vmware|vcenter|hyper-v|virtualization|citrix|vdi|rds)\b/i },
   { label: 'Vendor Management', pattern: /\b(vendor\s+management|escalation\s+management|shift\s+management|it\s+documentation|it\s+sop|technical\s+documentation)\b/i },
   { label: 'IT Infrastructure', pattern: /\b(it\s+infrastructure|infrastructure\s+support)\b/i },
 
   // Basic Networking & Remote Tools
-  { label: 'LAN / WAN / Wi-Fi', pattern: /\b(lan|wan|wi-fi|wifi|wlan|basic\s+networking|network\s+connectivity|structured\s+cabling|patch\s+panel|server\s+rack)\b/i },
+  { label: 'LAN / WAN / Wi-Fi', pattern: /\b(lan(\s+troubleshooting)?|wan|wi-fi|wifi|wlan|basic\s+networking|hardware\s+networking|network\s+support|network\s+connectivity|wireless(\s+technologies)?|structured\s+cabling|patch\s+panel|server\s+rack)\b/i },
   { label: 'VPN / DHCP / DNS', pattern: /\b(vpn|dhcp|dns|tcp\/ip|ip\s+addressing|ssl)\b/i },
   { label: 'Remote Tools (RDP/AnyDesk)', pattern: /\b(rdp|remote\s+desktop|anydesk|teamviewer|remote\s+troubleshooting)\b/i }
 ];
@@ -92,8 +92,8 @@ const NON_CV_TECH_TERMS = [
   { label: 'Finance / Accounting / Tax', pattern: /\b(general\s+ledger|accounts\s+payable|gst|taxation|chartered\s+accountant|statutory\s+audit)\b/i }
 ];
 
-// Ignore soft skills, shifts, regional metadata, or generic job terms from counting as missing technical skills
-const NON_TECHNICAL_JUNK_TAG = /\b(management|manager|lead|leadership|coordinator|supervision|administration|project|operations|communication|interpersonal|verbal|written|customer\s+service|client\s+handling|shift|rotational|night|day|apac|emea|us|uk|24\/7|24\*7|hiring|urgent|immediate|custom|installation|maintenance|graduate|diploma|btech|bca|bsc|fresher|experience|support|engineer|executive|specialist|analyst|associate|officer|professional|skills|requirements|good\s+to\s+have|plus|fluent|english|hindi|troubleshoot|handling|knowledge|ability)\b/i;
+// Ignore soft skills, shifts, regional metadata, or generic chopped Naukri tags from counting as missing technical skills
+const NON_TECHNICAL_JUNK_TAG = /\b(management|manager|lead|leadership|coordinator|supervision|administration|project|operations|communication|interpersonal|verbal|written|customer\s+service|client\s+handling|shift|rotational|night|day|apac|emea|us|uk|24\/7|24\*7|hiring|urgent|immediate|custom|installation|maintenance|graduate|diploma|btech|bca|bsc|fresher|experience|support|engineer|executive|specialist|analyst|associate|officer|professional|skills|requirements|good\s+to\s+have|plus|fluent|english|hindi|troubleshoot|handling|knowledge|ability|desk|sd|end|usage|technical|it\s+services?|office|computer|remote|onsite|on-site|system\s+engineering)\b/i;
 
 /**
  * Evaluates a job's COMPLETE skill/responsibility inventory against User CV Skills.

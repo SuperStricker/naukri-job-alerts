@@ -95,9 +95,9 @@ for (const role of ROLE_SLUGS) {
   for (const city of CITY_SLUGS) {
     let url;
     if (city.isRemote) {
-      url = `https://www.naukri.com/remote-${role.slug}-jobs`;
+      url = `https://www.naukri.com/${role.slug}-jobs?wfhType=2&jobAge=1`;
     } else {
-      url = `https://www.naukri.com/${role.slug}-jobs-in-${city.slug}`;
+      url = `https://www.naukri.com/${role.slug}-jobs-in-${city.slug}?jobAge=1`;
     }
     NAUKRI_TARGETS.push({
       name: `${role.name} [${city.label}]`,
@@ -133,6 +133,21 @@ function getNaukriPageUrl(baseUrl, pageNum) {
     const newPath = pathPart.replace(/(-\d+)?$/, `-${pageNum}`);
     return queryPart ? `${newPath}?${queryPart}` : newPath;
   }
+}
+
+function detectHasActiveNextPage() {
+  const isEnabled = (el) => {
+    if (!el) return false;
+    if (el.hasAttribute('disabled') || el.getAttribute('aria-disabled') === 'true') return false;
+    const href = el.getAttribute('href');
+    return !!(href && href !== '#' && !href.startsWith('javascript:'));
+  };
+  const nextBtn = document.querySelector('a.fright, a.next-page, a[aria-label*="Next"], a[aria-label*="next page"]');
+  if (isEnabled(nextBtn)) return true;
+  return Array.from(document.querySelectorAll('a')).some(a => {
+    const t = a.innerText.trim().toLowerCase();
+    return (t === 'next' || t === 'next >' || t === 'next »') && isEnabled(a);
+  });
 }
 
 /**
@@ -193,20 +208,23 @@ async function scrapeNaukriPage(page, target, pageNum = 1) {
     page.waitForSelector('.no-result, .zero-result, .no-jobs, [class*="no-result"], [class*="empty-research"]', { timeout: 4500 }).catch(() => null)
   ]);
 
-  // Attempt date sort on page 1 and verify whether it took effect
+  // Attempt date sort on page 1 ONLY when a verified active next page exists (saves ~1.3s/target on <=20 job results)
   let isDateSorted = false;
   if (pageNum === 1) {
     try {
-      const sortBtn = await page.$('#filter-sort');
-      if (sortBtn) {
-        await sortBtn.click();
-        await page.waitForTimeout(300);
-        const dateBtn = await page.$('#filter-sort-menu li:has-text("Date"), #filter-sort-menu a:has-text("Date")');
-        if (dateBtn) {
-          await dateBtn.click();
-          await page.waitForTimeout(1000);
-          const currentSortText = await page.$eval('#filter-sort', el => el.innerText).catch(() => '');
-          isDateSorted = /date/i.test(currentSortText);
+      const hasPagination = await page.evaluate(detectHasActiveNextPage);
+      if (hasPagination) {
+        const sortBtn = await page.$('#filter-sort');
+        if (sortBtn) {
+          await sortBtn.click();
+          await page.waitForTimeout(300);
+          const dateBtn = await page.$('#filter-sort-menu li:has-text("Date"), #filter-sort-menu a:has-text("Date")');
+          if (dateBtn) {
+            await dateBtn.click();
+            await page.waitForTimeout(900);
+            const currentSortText = await page.$eval('#filter-sort', el => el.innerText).catch(() => '');
+            isDateSorted = /date/i.test(currentSortText);
+          }
         }
       }
     } catch (e) {}
@@ -219,7 +237,9 @@ async function scrapeNaukriPage(page, target, pageNum = 1) {
   }
   await sleep(200);
 
-  // Extract DOM data, check pagination, and parse cards
+  const hasNextPage = await page.evaluate(detectHasActiveNextPage);
+
+  // Extract DOM data and parse cards
   const evalResult = await page.evaluate(() => {
     const tuples = Array.from(document.querySelectorAll('.cust-job-tuple'));
     const bodyText = document.body ? document.body.innerText.toLowerCase() : '';
@@ -231,15 +251,6 @@ async function scrapeNaukriPage(page, target, pageNum = 1) {
       bodyText.includes('we could not find any jobs') ||
       bodyText.includes('no matching jobs')
     );
-
-    // Verified next-page control check
-    const nextBtn = document.querySelector('a.fright, a.next-page, a[aria-label*="Next"], a[aria-label*="next page"]');
-    const allLinks = Array.from(document.querySelectorAll('a'));
-    const nextTextLink = allLinks.find(a => {
-      const t = a.innerText.trim().toLowerCase();
-      return t === 'next' || t === 'next >' || t === 'next »';
-    });
-    const hasNextPage = !!(nextBtn || nextTextLink);
 
     let parseFailures = 0;
     const parsedJobs = [];
@@ -257,6 +268,12 @@ async function scrapeNaukriPage(page, target, pageNum = 1) {
       const idMatch = href ? href.match(/(\d{10,14})/) : null;
       const dataJobId = t.getAttribute('data-job-id') || '';
       const rawId = idMatch ? idMatch[1] : dataJobId;
+
+      // Skip Naukri masked/promotional showcase tuples (no URL and no data-job-id)
+      const hasAnyJobLink = !!(href || t.querySelector('a[href*="job-listings"], a[href*="naukri.com/job"]'));
+      if (!hasAnyJobLink && !dataJobId) {
+        continue;
+      }
 
       if (!rawId || !href) {
         parseFailures++;
@@ -286,7 +303,6 @@ async function scrapeNaukriPage(page, target, pageNum = 1) {
     return {
       tupleCount: tuples.length,
       genuineEmpty,
-      hasNextPage,
       parseFailures,
       parsedJobs
     };
@@ -323,7 +339,7 @@ async function scrapeNaukriPage(page, target, pageNum = 1) {
     status: 'OK',
     error: null,
     jobs: evalResult.parsedJobs,
-    hasNextPage: evalResult.hasNextPage,
+    hasNextPage,
     parseFailures: evalResult.parseFailures,
     tupleCount: evalResult.tupleCount,
     isDateSorted
